@@ -621,12 +621,21 @@ let pstr_desc_rec_flag pstr =
 
 let mapper =
   let module_nesting = ref [] in
-  let with_module name f =
+  let with_module_name name f =
     let old_nesting = !module_nesting in
     module_nesting := !module_nesting @ [name];
     let result = f () in
     module_nesting := old_nesting;
     result
+  in
+  let with_module name f =
+#if OCAML_VERSION >= (4, 10, 0)
+    match name with
+    | None -> ()
+    | Some name -> with_module_name name f
+#else
+    with_module_name name f
+#endif
   in
   let expression mapper expr =
     match expr with
